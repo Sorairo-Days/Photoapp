@@ -1,0 +1,39 @@
+#slider {
+    display: table-cell;
+    vertical-align: middle;
+}
+
+.knob {
+    display: contents;
+}
+
+.filter-buttons { 
+    width: 134px;
+    height: 52px;
+}
+
+#waveform {
+    position: relative;
+}
+
+#select_sample {
+    text-align: center;
+    margin-bottom: 10px;
+    margin-top: 10px;
+    margin-right: 0;
+    margin-left: 0;
+}
+
+.freesound-color-btn {
+    background-color: #AB4646 !important;
+    border-color: #AB4646 !important;
+}
+
+.knob-name {
+    font-size: 1rem !important;
+}
+
+.help-modal-text {
+    font-size: 24px;
+    font-weight: bold;
+}
