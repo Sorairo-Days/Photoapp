@@ -24,3 +24,8 @@
     max-height: 420px;
     object-fit: contain;
 }
+
+.editor {
+    padding-left: 2%;
+    color:#cfcfcf;
+}
