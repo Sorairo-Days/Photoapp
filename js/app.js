@@ -1,4 +1,4 @@
-var sound = "https://freesound.org/data/previews/415/415072_2155630-lq.mp3";
+var sound = "";
 var wavesurfer = createWavesurfer(sound);
 
 var zoomValueInit = 0
@@ -59,10 +59,6 @@ function initQuerySelectors() {
     document.querySelector('#get_selection_btn').onclick = function () {
         toUndo('buffer', {buffer: wavesurfer.backend.buffer, tooltipTextUndo: 'Undo Get Selected Region', tooltipTextRedo: 'Redo Get Selected Region'});
         getSelectedRegion();
-    }
-    document.querySelector('#undo_get_selection_btn').onclick = function () {
-        toUndo('buffer', {buffer: wavesurfer.backend.buffer, tooltipTextUndo: 'Undo Get Original Sample', tooltipTextRedo: 'Redo Get Original Sample'});
-        getOriginalSample(sound);
     }
     document.querySelector('#delete_region').onclick = function () {
         toUndo('buffer', {buffer: wavesurfer.backend.buffer, tooltipTextUndo: 'Undo Delete Region', tooltipTextRedo: 'Redo Delete Region'});
