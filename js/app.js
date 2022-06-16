@@ -337,7 +337,7 @@ function undo() {
                 break;
         }
     } else {
-        print('Nothing to undo')
+        print('Нечего убирать')
     }
 }
 
@@ -378,7 +378,7 @@ function redo() {
                 break;
         }
     } else {
-        print('Nothing to redo')
+        print('Нечего возвращать назад')
     }
 }
 
@@ -475,7 +475,7 @@ function exportBufferToFile() {
         document.body.appendChild(a);
         a.style = "display: none";
         a.href = url;
-        var sound = 'sample__EDIT.wav';
+        var sound = `${Math.round(+new Date()/1000)}.wav`;
         a.download = sound;
         a.click();
         window.URL.revokeObjectURL(url);
