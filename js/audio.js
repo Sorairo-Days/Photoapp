@@ -123,8 +123,8 @@ function initKnobListeners() {
                 filterType: 'lowpass',
                 frequency: value,
                 Q: 1,
-                tooltipTextUndo: 'Undo Lowpass filter',
-                tooltipTextRedo: 'Redo Lowpass filter'
+                tooltipTextUndo: 'Откатить изменения Lowpass фильтра',
+                tooltipTextRedo: 'Вернуть изменения Lowpass фильтра'
             });
             lowpassFilter.frequency.value = value;
             appliedFilters.push({filterType: 'lowpass', frequency: lowpassFilter.frequency.value, Q: lowpassFilter.Q.value});
@@ -141,8 +141,8 @@ function initKnobListeners() {
                 filterType: 'highpass',
                 frequency: value,
                 Q: 1,
-                tooltipTextUndo: 'Undo Highpass filter',
-                tooltipTextRedo: 'Redo Highpass filter'
+                tooltipTextUndo: 'Откатить изменения Highpass фильтра',
+                tooltipTextRedo: 'Вернуть изменения Highpass фильтра'
             });
             highpassFilter.frequency.value = value;
             appliedFilters.push({filterType: 'highpass', frequency: highpassFilter.frequency.value, Q: highpassFilter.Q.value});
@@ -159,8 +159,8 @@ function initKnobListeners() {
                     filterType: 'bandpass',
                     frequency: value,
                     Q: bandpass_q_knob.getValue(),
-                    tooltipTextUndo: 'Undo Bandpass filter',
-                    tooltipTextRedo: 'Redo Bandpass filter'
+                    tooltipTextUndo: 'Откатить изменения Bandpass фильтра',
+                    tooltipTextRedo: 'Вернуть изменения Bandpass фильтра'
                 });
                 bandpassFilter.frequency.value = value;
                 bandpassFilter.Q.value = bandpass_q_knob.getValue();
@@ -180,8 +180,8 @@ function initKnobListeners() {
                     filterType: 'bandpass',
                     frequency: bandpass_freq_knob.getValue(),
                     Q: value,
-                    tooltipTextUndo: 'Undo Bandpass filter',
-                    tooltipTextRedo: 'Redo Bandpass filter'
+                    tooltipTextUndo: 'Откатить изменения Bandpass фильтра',
+                    tooltipTextRedo: 'Вернуть изменения Bandpass фильтра'
                 });
                 bandpassFilter.frequency.value = bandpass_freq_knob.getValue();
                 bandpassFilter.Q.value = value;
@@ -306,7 +306,7 @@ function undo() {
                 wavesurfer.empty()
                 wavesurfer.loadDecodedBuffer(previousBuffer);
                 break;
-            case 'filter': // TODO: Undo functions with filters
+            case 'filter':
                 toRedo('filter', undoAction.action);
                 appliedFilters.pop();
                 var sameFilter;
@@ -513,12 +513,12 @@ function encodeWAV(originalBuffer){
     var view = new DataView(buffer);
     var sampleRate = originalBuffer.sampleRate / 2;
   
-    // RIFF chunk descriptor
+    // RIFF chunk descriptor (это один из форматов файлов-контейнеров для хранения потоковых мультимедиа-данных)
     writeUTFBytes(view, 0, 'RIFF');
     view.setUint32(4, 44 + channelData.length * 2, true);
     writeUTFBytes(view, 8, 'WAVE');
 
-    // FMT sub-chunk
+    // FMT sub-chunk (format chunk)
     writeUTFBytes(view, 12, 'fmt ');
     view.setUint32(16, 16, true); // chunkSize
     view.setUint16(20, 1, true); // wFormatTag
@@ -528,11 +528,11 @@ function encodeWAV(originalBuffer){
     view.setUint16(32, 4, true); // wBlockAlign
     view.setUint16(34, 16, true); // wBitsPerSample
 
-    // data sub-chunk
+    // data sub-chunk (сами данные wav файла)
     writeUTFBytes(view, 36, 'data');
     view.setUint32(40, channelData.length * 2, true);
 
-    // write the PCM samples
+    // PCM запись (И́мпульсно-ко́довая модуля́ция используется для оцифровки аналоговых сигналов)
     var index = 44;
     var volume = 1;
     for (var i = 0; i < channelData.length; i++) {
@@ -540,7 +540,7 @@ function encodeWAV(originalBuffer){
         index += 2;
     }
 
-    // our final blob
+    // готовый файл
     var blob = new Blob([view], { type: 'audio/wav' });
   
     return blob;
@@ -556,7 +556,7 @@ function reverse() {
     wavesurfer.loadDecodedBuffer(buffer);
 }
 
-// Gain related functions
+// Функции связанные с громкостью
 
 function fadeIn() {
     var region = getRegion();
@@ -614,7 +614,6 @@ function fadeOut() {
         var finalBuffer = concatBuffer(firstBuffer, renderedBuffer);
         wavesurfer.loadDecodedBuffer(finalBuffer);
         wavesurfer.stop();
-        //source.disconnect();
     }).catch((err) => {
         console.error(err);
     })
@@ -624,14 +623,9 @@ function fadeOut() {
 
 function amplify(value) {
     wavesurfer.backend.gainNode.gain.value = Math.pow(10, (value / 20));
-    /*
-    wavesurfer.params.barHeight = value;
-    wavesurfer.empty();
-    wavesurfer.loadDecodedBuffer(wavesurfer.backend.buffer);
-    */
 }
 
-// Region related functions
+// Функции связанные с областями визуализатора
 function getSelectedRegion() {
     var regionsList = wavesurfer.regions.list;
     for (var r in regionsList) {
@@ -640,10 +634,10 @@ function getSelectedRegion() {
         var end = region.end;
         var duration = end - start;
         var buffer = createBuffer(wavesurfer.backend.buffer, duration)
-        // copy
+        // копирование
         copyBuffer(wavesurfer.backend.buffer, start, end, buffer, 0)
 
-        // load the new buffer
+        // загрузка нового буфера
         wavesurfer.empty()
         wavesurfer.loadDecodedBuffer(buffer)
     }
@@ -682,25 +676,25 @@ function deleteRegion() {
     var secondBuffer;
     var finalBuffer;
 
-    // Case 1: All the sample is selected
+    // Case 1: Вся область выбрана
     if (startTime == 0 && endTime == totalDuration) {
         resetAndLoadNewBuffer();
     }
-    // Case 2: Region is at the start of the sample
+    // Case 2: Область в начале выбрана
     else if (startTime == 0) {
         finalBuffer = createBuffer(wavesurfer.backend.buffer, totalDuration - endTime);
         copyBuffer(wavesurfer.backend.buffer, endTime, totalDuration, finalBuffer, 0);
 
         resetAndLoadNewBuffer(finalBuffer);
     }
-    // Case 3: Region is at the end of the sample
+    // Case 3: Выбрана область в конце 
     else if (endTime == totalDuration) {
         finalBuffer = createBuffer(wavesurfer.backend.buffer, startTime);
         copyBuffer(wavesurfer.backend.buffer, 0, startTime, finalBuffer, 0);
 
         resetAndLoadNewBuffer(finalBuffer);
     }
-    // Case 4: Region is in the middle
+    // Case 4: Область в середине
     else {
         firstBuffer = createBuffer(wavesurfer.backend.buffer, startTime);
         copyBuffer(wavesurfer.backend.buffer, 0, startTime, firstBuffer, 0);
@@ -739,11 +733,11 @@ function emptyRegion() {
     var emptyBuffer;
     var finalBuffer;
 
-    // Case 1: All the sample is selected
+    // Case 1: Вся область выбрана
     if (startTime == 0 && endTime == totalDuration) {
         resetAndLoadNewBuffer();
     }
-    // Case 2: Region is at the start of the sample
+    // Case 2: Область в начале выбрана
     else if (startTime == 0) {
         emptyBuffer = createBuffer(wavesurfer.backend.buffer, endTime);
         
@@ -754,7 +748,7 @@ function emptyRegion() {
 
         resetAndLoadNewBuffer(finalBuffer);
     }
-    // Case 3: Region is at the end of the sample 
+    // Case 3: Выбрана область в конце 
     else if (endTime == totalDuration) {
         firstBuffer = createBuffer(wavesurfer.backend.buffer, startTime);
         copyBuffer(wavesurfer.backend.buffer, 0, startTime, firstBuffer, 0);
@@ -765,7 +759,7 @@ function emptyRegion() {
 
         resetAndLoadNewBuffer(finalBuffer);
     }     
-    // Case 4: Region is in the middle
+    // Case 4: Область в середине
     else {
         firstBuffer = createBuffer(wavesurfer.backend.buffer, startTime);
         copyBuffer(wavesurfer.backend.buffer, 0, startTime, firstBuffer, 0);
@@ -809,7 +803,7 @@ function numOfRegions() {
     return Object.keys(wavesurfer.regions.list).length;
 }
 
-// Filter related functions
+// Функции связанные с фильтрами
 function applyFilter(filter, filterType, frequency, Q) {
     if (!filter) {
         filter = wavesurfer.backend.ac.createBiquadFilter();
@@ -859,7 +853,7 @@ function changePlaybackRate(value = null) {
     wavesurfer.setPlaybackRate(value);
 }
 
-// Key events
+// События связанные с нажатием кнопок
 
 function keyUp(event) {
     switch (event.keyCode) {
@@ -876,9 +870,8 @@ function keyUp(event) {
 }
 
 function keyDown(event) {
-    //print(event);
     switch (event.keyCode) {
-        case 8: // delete
+        case 8: // del
             if (numOfRegions() > 0) {
                 toUndo('buffer', {buffer: wavesurfer.backend.buffer, tooltipTextUndo: 'Undo Delete Region', tooltipTextRedo: 'Redo Delete Region'});
                 deleteRegion();
@@ -891,10 +884,10 @@ function keyDown(event) {
                 redo();
             }
             break;
-        case 187:  //+
+        case 187:  // +
             zoomIn();
             break;
-        case 189: //-
+        case 189: // -
             zoomOut();
             break;
     }
